@@ -14,7 +14,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat """
+                sh """
                     dotnet restore
                     dotnet build --configuration Release
                 """
@@ -23,13 +23,13 @@ pipeline {
 
         stage('Test') {
             steps {
-                bat "dotnet test --no-restore --configuration Release"
+                sh "dotnet test --no-restore --configuration Release"
             }
         }
 
         stage('Publish') {
             steps {
-                bat "dotnet publish --no-restore --configuration Release --output .\\publish"
+                sh "dotnet publish --no-restore --configuration Release --output .\\publish"
             }
         }
     }
