@@ -1,9 +1,8 @@
 pipeline {
-    agent any
-
-    environment {
-        DOTNET_CLI_HOME = "/var/dotnet"
-        PATH = "/usr/share/dotnet:$PATH"  // Ensure dotnet is in PATH
+    agent {
+        docker {
+            image 'mcr.microsoft.com/dotnet/sdk:8.0'
+        }
     }
 
     stages {
@@ -15,23 +14,22 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh '''
-                    dotnet --version
+                bat """
                     dotnet restore
                     dotnet build --configuration Release
-                '''
+                """
             }
         }
 
         stage('Test') {
             steps {
-                sh 'dotnet test --no-restore --configuration Release'
+                bat "dotnet test --no-restore --configuration Release"
             }
         }
 
         stage('Publish') {
             steps {
-                sh 'dotnet publish --no-restore --configuration Release --output ./publish'
+                bat "dotnet publish --no-restore --configuration Release --output ./publish"
             }
         }
     }
