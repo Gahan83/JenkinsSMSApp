@@ -1,8 +1,13 @@
 pipeline {
     agent {
         docker {
-            image 'mcr.microsoft.com/dotnet/sdk:8.0'
+            image 'mcr.microsoft.com/dotnet/sdk:8.0' 
+            args '-v /var/jenkins_home:/var/jenkins_home' 
         }
+    }
+
+    environment {
+        DOTNET_CLI_HOME = "/var/jenkins_home"
     }
 
     stages {
@@ -12,24 +17,27 @@ pipeline {
             }
         }
 
+        stage('Restore') {
+            steps {
+                sh 'dotnet restore'
+            }
+        }
+
         stage('Build') {
             steps {
-                bat """
-                    dotnet restore
-                    dotnet build --configuration Release
-                """
+                sh 'dotnet build --configuration Release'
             }
         }
 
         stage('Test') {
             steps {
-                bat "dotnet test --no-restore --configuration Release"
+                sh 'dotnet test --no-restore --configuration Release'
             }
         }
 
         stage('Publish') {
             steps {
-                bat "dotnet publish --no-restore --configuration Release --output ./publish"
+                sh 'dotnet publish --no-restore --configuration Release --output ./publish'
             }
         }
     }
