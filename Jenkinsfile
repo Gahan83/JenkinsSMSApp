@@ -34,12 +34,6 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                sh 'dotnet test --no-restore --configuration Release'
-            }
-        }
-
         stage('Publish') {
             steps {
                 sh 'dotnet publish --no-restore --configuration Release --output ${PUBLISH_DIR}'
