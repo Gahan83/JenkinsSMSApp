@@ -28,7 +28,15 @@ pipeline {
             }
         }
 
+        
+
         stage('Build') {
+            steps {
+                sh 'dotnet build --configuration Release'
+            }
+        }
+
+        stage('TEst') {
             steps {
                 sh 'dotnet build --configuration Release'
             }
