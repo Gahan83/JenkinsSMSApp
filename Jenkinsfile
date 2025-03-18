@@ -1,15 +1,9 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/dotnet/sdk:8.0'  
-            args '--user root' 
-        }
-    }
+    agent any
 
     environment {
         EC2_USER = "Administrator"
         EC2_HOST = "ec2-44-220-164-163.compute-1.amazonaws.com"
-        APP_PATH = "FhKc@5OoTbHptzV)XdPH4NNRjGQR7nV?"
     }
 
     stages {
@@ -19,7 +13,7 @@ pipeline {
             }
         }
 
-        stage('Build ASP.NET Core App') {
+        stage('Build ASP.NET App') {
             steps {
                 script {
                     dir('your-dotnet-app') {
@@ -32,6 +26,7 @@ pipeline {
         stage('Deploy to IIS') {
             steps {
                 script {
+                    // Deploy ASP.NET Core app
                     sh "scp -r your-dotnet-app/publish/* ${EC2_USER}@${EC2_HOST}:${APP_PATH}/dotnet"
                 }
             }
