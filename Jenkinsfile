@@ -1,23 +1,17 @@
 pipeline {
-    agent any
+    agent any  // Runs on any available agent
 
     stages {
         stage('Checkout Code') {
             steps {
-                checkout scm
+                git 'https://github.com/Gahan83/JenkinsSMSApp.git'  
             }
         }
 
         stage('Build') {
             steps {
                 script {
-                    sh "dotnet --info"
-                    
-                    // Restoring dependencies
-                    sh "dotnet restore"
-
-                    // Building the application
-                    sh "dotnet build --configuration Release"
+                    sh 'dotnet build --configuration Release'
                 }
             }
         }
@@ -25,8 +19,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Running tests
-                    sh "dotnet test --no-restore --configuration Release"
+                    sh 'dotnet test --no-build --configuration Release'
                 }
             }
         }
@@ -34,8 +27,7 @@ pipeline {
         stage('Publish') {
             steps {
                 script {
-                    // Publishing the application
-                    sh "dotnet publish --no-restore --configuration Release --output .\\publish"
+                    sh 'dotnet publish -c Release -o publish'
                 }
             }
         }
@@ -43,7 +35,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Deploying the application
                     withCredentials([usernamePassword(credentialsId: 'ec2-credentials', passwordVariable: 'CREDENTIAL_PASSWORD', usernameVariable: 'CREDENTIAL_USERNAME')]) {
                 powershell '''
                 $credentials = New-Object System.Management.Automation.PSCredential($env:CREDENTIAL_USERNAME, (ConvertTo-SecureString $env:CREDENTIAL_PASSWORD -AsPlainText -Force))
@@ -57,7 +48,7 @@ pipeline {
                 # Remove mapped drive after deployment
                 Remove-PSDrive -Name X
                 '''
-                    }
+                  }
                 }
             }
         }
