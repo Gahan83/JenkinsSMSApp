@@ -1,33 +1,59 @@
 pipeline {
     agent any
 
-    environment {
-        EC2_USER = "Administrator"
-        EC2_HOST = "ec2-44-220-164-163.compute-1.amazonaws.com"
-    }
-
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/Gahan83/JenkinsSMSApp.git'
+                checkout scm
             }
         }
 
-        stage('Build ASP.NET App') {
+        stage('Build') {
             steps {
                 script {
-                    dir('your-dotnet-app') {
-                        sh 'dotnet publish -c Release -o publish'
-                    }
+                    // Restoring dependencies
+                    sh "dotnet restore"
+
+                    // Building the application
+                    sh "dotnet build --configuration Release"
                 }
             }
         }
 
+        stage('Test') {
+            steps {
+                script {
+                    // Running tests
+                    sh "dotnet test --no-restore --configuration Release"
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                script {
+                    // Publishing the application
+                    sh "dotnet publish --no-restore --configuration Release --output .\\publish"
+                }
+            }
+        }
+        
         stage('Deploy to IIS') {
             steps {
                 script {
-                    // Deploy ASP.NET Core app
-                    sh "scp -r your-dotnet-app/publish/* ${EC2_USER}@${EC2_HOST}:${APP_PATH}/dotnet"
+                    withCredentials([usernamePassword(credentialsId: 'ec2-credentials', passwordVariable: 'CREDENTIAL_PASSWORD', usernameVariable: 'CREDENTIAL_USERNAME')]) {
+                powershell '''
+                $credentials = New-Object System.Management.Automation.PSCredential($env:CREDENTIAL_USERNAME, (ConvertTo-SecureString $env:CREDENTIAL_PASSWORD -AsPlainText -Force))
+
+                # Map the EC2 shared drive
+                New-PSDrive -Name X -PSProvider FileSystem -Root "\\\\ec2-44-220-164-163.compute-1.amazonaws.com\\coreapp" -Persist -Credential $credentials
+
+                # Copy files to EC2 IIS directory
+                Copy-Item -Path '.\\publish\\*' -Destination 'X:\' -Recurse -Force
+
+                # Remove mapped drive after deployment
+                Remove-PSDrive -Name X
+                '''
                 }
             }
         }
