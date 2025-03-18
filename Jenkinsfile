@@ -37,10 +37,11 @@ pipeline {
                 }
             }
         }
-        
-        stage('Deploy to IIS') {
+
+        stage('Deploy') {
             steps {
                 script {
+                    // Deploying the application
                     withCredentials([usernamePassword(credentialsId: 'ec2-credentials', passwordVariable: 'CREDENTIAL_PASSWORD', usernameVariable: 'CREDENTIAL_USERNAME')]) {
                 powershell '''
                 $credentials = New-Object System.Management.Automation.PSCredential($env:CREDENTIAL_USERNAME, (ConvertTo-SecureString $env:CREDENTIAL_PASSWORD -AsPlainText -Force))
@@ -54,6 +55,7 @@ pipeline {
                 # Remove mapped drive after deployment
                 Remove-PSDrive -Name X
                 '''
+                    }
                 }
             }
         }
