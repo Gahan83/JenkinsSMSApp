@@ -11,6 +11,8 @@ pipeline {
         stage('Build') {
             steps {
                 script {
+                    sh "dotnet --info"
+                    
                     // Restoring dependencies
                     sh "dotnet restore"
 
